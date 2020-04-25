@@ -1,0 +1,92 @@
+---Model#1--- High--Medium---Low
+--------------------------------
+SELECT * FROM `lifestylecoach-iowuti.fitbitdata.fitbitdataforbq` LIMIT 1000
+
+CREATE OR REPLACE MODEL `fitbitdata.predict_riskv2_1` 
+OPTIONS(model_type='LOGISTIC_REG', LEARN_RATE_STRATEGY =  'LINE_SEARCH' ) AS
+SELECT
+ avg_step_count, avg_calories_Intake,Avg_hours_of_sleep,avg_weight_kg, Height,
+ health_risk as label
+FROM
+  `lifestylecoach-iowuti.fitbitdata.fitbitdataforbq`;
+
+SELECT
+  *
+FROM
+  ML.EVALUATE(MODEL `fitbitdata.predict_riskv2_1`)
+
+-- High
+WITH pred_table AS (
+SELECT
+  3000 as avg_step_count,
+   3200 as avg_calories_Intake,
+  5 as Avg_hours_of_sleep,
+  90 as avg_weight_kg,
+164 as Height
+)
+
+SELECT
+  *
+FROM
+  ML.PREDICT(MODEL `fitbitdata.predict_riskv2_1`,
+    TABLE pred_table);
+
+---Low
+WITH pred_table AS (
+SELECT
+  13000 as avg_step_count,
+   2000 as avg_calories_Intake,
+  9 as Avg_hours_of_sleep,
+  50 as avg_weight_kg,
+164 as Height
+)
+SELECT
+  *
+FROM
+  ML.PREDICT(MODEL `fitbitdata.predict_riskv2_1`,
+    TABLE pred_table);
+
+--------------------------------
+---Model#2--- Predict Wt
+--------------------------------
+
+SELECT * FROM `lifestylecoach-iowuti.fitbitdailydata.detaileddailydatav0` LIMIT 1000;
+
+
+CREATE OR REPLACE MODEL `fitbitdata.predict_weight_v0` 
+OPTIONS(model_type='LINEAR_REG', LEARN_RATE_STRATEGY =  'LINE_SEARCH' ) AS
+SELECT
+ UserID,date,step_count,calories_burned,hours_of_sleep, weight_kg as label
+FROM
+  `lifestylecoach-iowuti.fitbitdailydata.detaileddailydatav0`;
+
+
+SELECT
+  *
+FROM
+  ML.EVALUATE(MODEL `fitbitdata.predict_weight_v0` )
+
+---Low
+WITH pred_table AS (
+SELECT
+  13000 as avg_step_count,
+   2000 as avg_calories_Intake,
+  9 as Avg_hours_of_sleep,
+  50 as avg_weight_kg,
+164 as Height
+)
+SELECT
+  *
+FROM
+  ML.PREDICT(MODEL `fitbitdata.predict_weight_v0`,
+    TABLE pred_table);
+
+WITH pred_table AS (
+SELECT
+ 1001 as UserID, CAST('2018-01-09' as DATE) as date,7500 as step_count, 300 as calories_burned, 6 as hours_of_sleep
+   )
+SELECT
+  *
+FROM
+  ML.PREDICT(MODEL `fitbitdata.predict_weight_v0`,
+    TABLE pred_table);
